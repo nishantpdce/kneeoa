@@ -100,7 +100,7 @@ with g2.as_default():
     x = tf.placeholder("float", [None, n_input])
     y = tf.placeholder("float", [None, n_classes])
 
-    train_label = tf.argmax(y,1)
+    train_label = y
     with tf.name_scope('layer1'):
         W_1 = tf.get_variable(
                     name="W1",
@@ -160,7 +160,6 @@ with g2.as_default():
 
         h_3 = tf.nn.bias_add(tf.matmul(h_2, W_3),b_3)
         a_3 =  tf.nn.sigmoid(h_3)
-        print "a_3 is",a_3
     # h_3 = tf.nn.softmax(h_3)
     # h_3 = h_3
 
@@ -170,13 +169,12 @@ with g2.as_default():
 
     # saver = tf.train.Saver()
     #Monitor accuracy
-    print "h3_ggi", h_3
     predicted_y = tf.nn.sigmoid(h_3)
     #predicted_y = tf.argmax(tf.nn.sigmoid(h_3), 1)
     actual_y = y 
     #tf.argmax(y, 1)
-    print "predicted_ggi",predicted_y
-    print "actual_ggi", actual_y
+    print "predicted",predicted_y
+    print "actual", actual_y
 
     correct_prediction = tf.equal(predicted_y, actual_y)
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
@@ -245,9 +243,9 @@ with tf.Session(graph=g2) as sess2:
       #       }, feed={...})
       #      import pdb; pdb.set_trace()
       #      print(results["train_label"])
-            print l
-            print "a3_out after run", a3_out
-            
+            #print l
+            #print "a3_out after run", a3_out
+            #print "done"            
             # print str(epoch) + "-------------------------------------"
 
 
