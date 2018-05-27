@@ -23,9 +23,8 @@ Train images codes folder - Path where training images codes will be stored
 Test images codes folder - Path where testing images codes will be stored
 
 3) The extracted features are now used for training our 2-Layer Neural Network from scratch.The computed models are saved as tensorflow checkpoint after every Epoch.
-
-python train_model.py <Training images folder> <Train images codes folder> <Training image labels file> <Folder to save models>
+python train_model.py final_train_images_calc_nodule_only train_image_codes ../parser/train_file savedmodel
 
 4) Finally the saved models are used for making predictions.Confusion Matrix is used as the Performance Metrics for this classifcation task.
 
-python test_model.py <Testing images folder> <Test images codes folder> <Testing image labels file> <Folder with saved models>
+python test_model.py final_test_images_calc_nodule_only test_image_codes ../parser/test_file savedmodel

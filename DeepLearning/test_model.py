@@ -21,10 +21,28 @@ fileObject = open(filename,'r')
 test_labels = pickle.load(fileObject)
 print "test_labels",len(test_labels)
 
+def convertToDictionary(dataset):
+        return_dict = {}
+        for value in dataset:
+                user_id = value[0] + value[3]
+                side = int(value[1])
+                progress = int(value[2])
+                return_array = [side, progress]
+                dictionary_value = return_dict.get(user_id, None)
+                if (dictionary_value == None):
+                        return_dict[user_id] = return_array
+                else:
+                        return_dict[user_id] = [dictionary_value, return_array]
+        return return_dict
+
+test_labels_dict = convertToDictionary(test_labels)
+
+arr_test = os.listdir(os.getcwd()+"/"+sys.argv[1])
+
 # n_input = 200704
 n_input = 25088
 # The number of classes which the ConvNet has to classify into .
-n_classes = 2
+n_classes = 1
 # The number of neurons in the each Hidden Layer .
 n_hidden1 = 512
 n_hidden2 = 512
@@ -78,7 +96,7 @@ with g2.as_default():
     x = tf.placeholder("float", [None, n_input])
     y = tf.placeholder("float", [None, n_classes])
 
-    train_label = tf.argmax(y,1)
+    train_label = y
     with tf.name_scope('layer1'):
         W_1 = tf.get_variable(
                     name="W1",
@@ -141,15 +159,16 @@ with g2.as_default():
     # h_3 = tf.nn.softmax(h_3)
     # h_3 = h_3
 
-    Cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits = h_3, labels=  y))
+    Cost = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = h_3, labels=  y))
     optimizer = tf.train.GradientDescentOptimizer(0.01).minimize(Cost)
     # optimizer = tf.train.AdamOptimizer(0.01).minimize(Cost)
 
     # saver = tf.train.Saver()
     #Monitor accuracy
-    soft = tf.nn.softmax(h_3)
-    predicted_y = tf.argmax(tf.nn.softmax(h_3), 1)
-    actual_y = tf.argmax(y, 1)
+    soft = tf.nn.sigmoid(h_3)
+    #predicted_y = tf.nn.sigmoid(h_3)
+    predicted_y = tf.round(tf.nn.sigmoid(h_3))
+    actual_y = y
 
 
     correct_prediction = tf.equal(predicted_y, actual_y)
@@ -165,7 +184,7 @@ class_pred = np.array([])
 class_actual=np.array([])
 
 r = (testing_folder_len - (testing_folder_len%25))+1
-print "guggu:" + str(r)
+print "testsize:" + str(r)
 
 
 with tf.Session(graph=g2) as sess1:
@@ -183,14 +202,27 @@ with tf.Session(graph=g2) as sess1:
 	print file_Name
         print content_features.shape
 
-        if j==r-1:
-            test_label = test_labels[j:]
-            print "test_label",test_label.shape
-        else:
-            test_label = test_labels[j:25+j]
-            print "test_label",test_label.shape
+        label = np.zeros((25,1))
+            #print "label shape", label.shape
+        idx = 0
 
-        acc,pred,s,actual = sess1.run([accuracy,predicted_y,soft,actual_y], feed_dict={x: content_features,y: test_label})
+        if j==r-1:
+            #test_label = test_labels[j:]
+            filename = arr_test[j:]
+            for var in filename:
+                label[idx][0] = test_labels_dict[var[0:8]][1]
+                idx = idx + 1
+            label = label[:idx]
+            print "test_label",label.shape
+        else:
+            #test_label = test_labels[j:25+j]
+            filename = arr_test[j+0:j+25]
+            for var in filename:
+                label[idx][0] = test_labels_dict[var[0:8]][1]
+                idx = idx + 1
+            print "test_label",label.shape
+
+        acc,pred,s,actual = sess1.run([accuracy,predicted_y,soft,actual_y], feed_dict={x: content_features,y: label})
         print acc
         print s
         print "predicted",pred
@@ -198,6 +230,9 @@ with tf.Session(graph=g2) as sess1:
 
         # print type(pred)
         # class_pred+=list(pred)
+        pred = pred.reshape(pred.shape[0])
+        actual = actual.reshape(actual.shape[0])
+        print "pred shape",class_pred.dtype
         class_pred = np.concatenate((class_pred, pred), axis=0)
         class_actual = np.concatenate((class_actual, actual), axis=0)
         # class_actual+=list(actual)
@@ -209,18 +244,18 @@ print class_actual
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 
-conf_matrix = confusion_matrix(class_actual,class_pred)
+#conf_matrix = confusion_matrix(class_actual,class_pred)
 
-print conf_matrix
+#print conf_matrix
 prfs = precision_recall_fscore_support(class_actual, class_pred)
 print "precision : ",prfs[0] 
 print "recall : ",prfs[1] 
 print "fscore : ",prfs[2] 
 print "support : ",prfs[3] 
-plt.matshow(conf_matrix)
-plt.colorbar()
-plt.ylabel('True label')
-plt.xlabel('Predicted label')
+#plt.matshow(conf_matrix)
+#plt.colorbar()
+#plt.ylabel('True label')
+#plt.xlabel('Predicted label')
 
 plt.show()
 
