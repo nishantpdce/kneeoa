@@ -7,7 +7,7 @@ import time
 from sklearn.metrics import precision_recall_fscore_support
 import sys
 
-print sys.argv
+print (sys.argv)
 testing_folder = sys.argv[1]
 test_labels = sys.argv[3]
 
@@ -17,9 +17,9 @@ epoch = 20
 testing_folder_len = len([name for name in os.listdir(os.getcwd()+"/"+testing_folder)])
 
 filename = test_labels
-fileObject = open(filename,'r')
+fileObject = open(filename,'rb')
 test_labels = pickle.load(fileObject)
-print "test_labels",len(test_labels)
+print ("test_labels",len(test_labels))
 
 def convertToDictionary(dataset):
         return_dict = {}
@@ -184,7 +184,7 @@ class_pred = np.array([])
 class_actual=np.array([])
 
 r = (testing_folder_len - (testing_folder_len%25))+1
-print "testsize:" + str(r)
+print ("testsize:" + str(r))
 
 
 with tf.Session(graph=g2) as sess1:
@@ -196,11 +196,11 @@ with tf.Session(graph=g2) as sess1:
         test_img = []
 
         file_Name = os.getcwd()+"/"+sys.argv[2]+"/"+ str(j)
-        fileObject = open(file_Name,'r')
+        fileObject = open(file_Name,'rb')
         # load the object from the file into var b
         content_features = pickle.load(fileObject)
-	print file_Name
-        print content_features.shape
+        print (file_Name)
+        print (content_features.shape)
 
         label = np.zeros((25,1))
             #print "label shape", label.shape
@@ -213,33 +213,33 @@ with tf.Session(graph=g2) as sess1:
                 label[idx][0] = test_labels_dict[var[0:8]][1]
                 idx = idx + 1
             label = label[:idx]
-            print "test_label",label.shape
+            print ("test_label",label.shape)
         else:
             #test_label = test_labels[j:25+j]
             filename = arr_test[j+0:j+25]
             for var in filename:
                 label[idx][0] = test_labels_dict[var[0:8]][1]
                 idx = idx + 1
-            print "test_label",label.shape
+            print ("test_label",label.shape)
 
         acc,pred,s,actual = sess1.run([accuracy,predicted_y,soft,actual_y], feed_dict={x: content_features,y: label})
-        print acc
-        print s
-        print "predicted",pred
-        print "actual",actual
+        print (acc)
+        print (s)
+        print ("predicted",pred)
+        print ("actual",actual)
 
         # print type(pred)
         # class_pred+=list(pred)
         pred = pred.reshape(pred.shape[0])
         actual = actual.reshape(actual.shape[0])
-        print "pred shape",class_pred.dtype
+        print ("pred shape",class_pred.dtype)
         class_pred = np.concatenate((class_pred, pred), axis=0)
         class_actual = np.concatenate((class_actual, actual), axis=0)
         # class_actual+=list(actual)
-        print np.unique(class_actual,return_counts=True)
+        print (np.unique(class_actual,return_counts=True))
 
-print class_pred
-print class_actual
+print (class_pred)
+print (class_actual)
 
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
@@ -248,10 +248,10 @@ import matplotlib.pyplot as plt
 
 #print conf_matrix
 prfs = precision_recall_fscore_support(class_actual, class_pred)
-print "precision : ",prfs[0] 
-print "recall : ",prfs[1] 
-print "fscore : ",prfs[2] 
-print "support : ",prfs[3] 
+print ("precision : ",prfs[0]) 
+print ("recall : ",prfs[1]) 
+print ("fscore : ",prfs[2]) 
+print ("support : ",prfs[3]) 
 #plt.matshow(conf_matrix)
 #plt.colorbar()
 #plt.ylabel('True label')

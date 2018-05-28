@@ -18,7 +18,7 @@ training_folder_len = len([name for name in os.listdir(os.getcwd()+"/"+training_
 filename = train_labels
 fileObject = open(filename,'r')
 train_labels = pickle.load(fileObject)
-print "train_labels",len(train_labels)
+print ("train_labels",len(train_labels))
 
 def convertToDictionary(dataset):
         return_dict = {}
@@ -173,8 +173,8 @@ with g2.as_default():
     #predicted_y = tf.argmax(tf.nn.sigmoid(h_3), 1)
     actual_y = y 
     #tf.argmax(y, 1)
-    print "predicted",predicted_y
-    print "actual", actual_y
+    print ("predicted",predicted_y)
+    print ("actual", actual_y)
 
     correct_prediction = tf.equal(predicted_y, actual_y)
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
@@ -186,13 +186,12 @@ with g2.as_default():
 
 
 r = (training_folder_len - (training_folder_len%batch))+1
-print r
+print (r)
 
 with tf.Session(graph=g2) as sess2:
 # sess =  tf.Session(graph=g2)
 
     sess2.run(tf.global_variables_initializer())
-    print "shit"
     # saver.save(sess2, 'my-model')
 
     accuracy_list=[]
@@ -212,9 +211,9 @@ with tf.Session(graph=g2) as sess2:
             # print type(content_features)
             content_features = content_features.reshape((content_features.shape[0],7*7*512))
             # content_features = content_features.reshape((content_features.shape[0],28*28*256))
-            print content_features.shape , "Feature Map Shape"
+            print (content_features.shape , "Feature Map Shape")
 
-            print "j=",j
+            print ("j=",j)
 
             label = np.zeros((20,1))
             #print "label shape", label.shape
@@ -226,14 +225,14 @@ with tf.Session(graph=g2) as sess2:
                     label[idx][0] = train_labels_dict[var[0:8]][1]
                     idx = idx + 1
                 label = label[:idx]
-                print label.shape
+                print (label.shape)
             else:
                 #label = train_labels[j+0:j+20]
                 filename = arr_train[j+0:j+20]
                 for var in filename:
                         label[idx][0] = train_labels_dict[var[0:8]][1]
                         idx = idx + 1
-                print label.shape
+                print (label.shape)
 
             _,l,w1,cst,a3_out = sess2.run([optimizer,train_label,W_1,Cost,a_3], feed_dict={x: content_features, y:label})
       #      results = sess2.run({
@@ -250,17 +249,17 @@ with tf.Session(graph=g2) as sess2:
 
 
             if j % 100==0:
-                print " Epoch="+str(epoch),"j="+str(j)
+                print (" Epoch="+str(epoch),"j="+str(j))
             #     accuracy_list.append(acc)
                 cost.append(cst)
 
-                print "COST",cost
+                print ("COST",cost)
 
         print("--- %s seconds ---" % (time.time() - start_time))
         j=0
         path_name = os.getcwd()+"/"+sys.argv[4]+"/"+"my-model-"+str(epoch)+".ckpt"
         save_path = saver.save(sess2, path_name)
-        print path_name,"saved"
+        print (path_name,"saved")
         #
 
 # python train_model.py <Training images folder> <Train images codes folder> <Training image labels file> <Folder to save models>
