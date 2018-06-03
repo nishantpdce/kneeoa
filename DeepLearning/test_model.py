@@ -159,8 +159,8 @@ with g2.as_default():
     # h_3 = tf.nn.softmax(h_3)
     # h_3 = h_3
 
-    Cost = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = h_3, labels=  y))
-    optimizer = tf.train.GradientDescentOptimizer(0.01).minimize(Cost)
+    #Cost = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = h_3, labels=  y))
+    #optimizer = tf.train.GradientDescentOptimizer(0.01).minimize(Cost)
     # optimizer = tf.train.AdamOptimizer(0.01).minimize(Cost)
 
     # saver = tf.train.Saver()
@@ -238,13 +238,21 @@ with tf.Session(graph=g2) as sess1:
         # class_actual+=list(actual)
         print (np.unique(class_actual,return_counts=True))
 
-print (class_pred)
-print (class_actual)
+print (class_pred.shape)
+print (class_actual.shape)
 
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 
 #conf_matrix = confusion_matrix(class_actual,class_pred)
+
+prf = tf.metrics.precision(class_actual, class_pred)
+acc = tf.metrics.accuracy(class_actual, class_pred)
+sess = tf.InteractiveSession()
+tf.global_variables_initializer().run()
+tf.local_variables_initializer().run()
+print(sess.run([prf]))
+print(sess.run([acc]))
 
 #print conf_matrix
 prfs = precision_recall_fscore_support(class_actual, class_pred)

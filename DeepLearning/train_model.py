@@ -11,7 +11,7 @@ training_folder = sys.argv[1]
 train_labels = sys.argv[3]
 mode_folder = sys.argv[4]
 batch = 20
-
+beta = 0.01
 training_folder_len = len([name for name in os.listdir(os.getcwd()+"/"+training_folder)])
 
 
@@ -108,11 +108,11 @@ with g2.as_default():
                     dtype=tf.float32,
                     initializer=tf.contrib.layers.xavier_initializer())
 
-        # b_1 = tf.get_variable(
-        #     name='b1',
-        #     shape=[n_hidden1],
-        #     dtype=tf.float32,
-        #     initializer=tf.constant_initializer(0.0))
+        #b_1 = tf.get_variable(
+        #    name='b1',
+        #    shape=[n_hidden1],
+        #    dtype=tf.float32,
+        #    initializer=tf.constant_initializer(0.0))
 
         z1_BN = tf.matmul(x, W_1)
         batch_mean1, batch_var1 = tf.nn.moments(z1_BN,[0])
@@ -120,9 +120,10 @@ with g2.as_default():
         beta1 = tf.Variable(tf.zeros([n_hidden1]))
         BN1 = tf.nn.batch_normalization(z1_BN,batch_mean1,batch_var1,beta1,scale1,epsilon)
 
-        # h_1 = tf.nn.relu(tf.nn.bias_add(tf.matmul(x, W_1),b_1))
+        #h_1 = tf.nn.relu(tf.nn.bias_add(tf.matmul(x, W_1),b_1))
         h_1 = tf.nn.relu(BN1)
-
+        #keep_prob = tf.placeholder("float")
+        #h_1d = tf.nn.dropout(h_1, keep_prob)
     with tf.name_scope('layer2'):
         W_2 = tf.get_variable(
                     name="W2",
@@ -130,11 +131,11 @@ with g2.as_default():
                     dtype=tf.float32,
                     initializer=tf.contrib.layers.xavier_initializer())
 
-        # b_2 = tf.get_variable(
-        #     name='b2',
-        #     shape=[n_hidden2],
-        #     dtype=tf.float32,
-        #     initializer=tf.constant_initializer(0.0))
+        #b_2 = tf.get_variable(
+        #    name='b2',
+        #    shape=[n_hidden2],
+        #    dtype=tf.float32,
+        #    initializer=tf.constant_initializer(0.0))
 
         z2_BN = tf.matmul(h_1, W_2)
         batch_mean2, batch_var2 = tf.nn.moments(z2_BN,[0])
@@ -142,9 +143,9 @@ with g2.as_default():
         beta2 = tf.Variable(tf.zeros([n_hidden2]))
         BN2 = tf.nn.batch_normalization(z2_BN,batch_mean2,batch_var2,beta2,scale2,epsilon)
 
-        # h_2 = tf.nn.relu(tf.nn.bias_add(tf.matmul(h_1, W_2),b_2))
+        #h_2 = tf.nn.relu(tf.nn.bias_add(tf.matmul(h_1, W_2),b_2))
         h_2 = tf.nn.relu(BN2)
-
+        #h_2d = tf.nn.dropout(h_2, keep_prob)
     with tf.name_scope('output'):
         W_3 = tf.get_variable(
                    name="W3",
@@ -164,8 +165,10 @@ with g2.as_default():
     # h_3 = h_3
 
     Cost = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = h_3, labels = y))
+    #regularizer = tf.nn.l2_loss(W_1) + tf.nn.l2_loss(W_2) + tf.nn.l2_loss(W_3)
+    #Cost = tf.reduce_mean(Cost1 + beta * regularizer)
     optimizer = tf.train.GradientDescentOptimizer(0.01).minimize(Cost)
-    # optimizer = tf.train.AdamOptimizer(0.01).minimize(Cost)
+    #optimizer = tf.train.AdamOptimizer(0.01).minimize(Cost)
 
     # saver = tf.train.Saver()
     #Monitor accuracy
@@ -234,7 +237,7 @@ with tf.Session(graph=g2) as sess2:
                         idx = idx + 1
                 print (label.shape)
 
-            _,l,w1,cst,a3_out = sess2.run([optimizer,train_label,W_1,Cost,a_3], feed_dict={x: content_features, y:label})
+            _,l,w1,cst,a3_out = sess2.run([optimizer,train_label,W_1,Cost,a_3], feed_dict={x: content_features, y:label, keep_prob : 0.7})
       #      results = sess2.run({
       #        "opt": optimizer,
       ##        "train_label": train_label,

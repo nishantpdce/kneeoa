@@ -39,14 +39,14 @@ train_labels_dict = convertToDictionary(train_labels)
 test_labels_dict = convertToDictionary(test_labels)
 
 count = 0
-source_dir = '/home/npandit/project/Xvisionself/DeepLearning/finalimagedata'
-train_dest = '/home/npandit/project/Xvisionself/DeepLearning/final_train_images_calc_nodule_only'
-test_dest = '/home/npandit/project/Xvisionself/DeepLearning/final_test_images_calc_nodule_only'
+source_dir = '/home/npandit/project/kneeoa/kneeimage'
+train_dest = '/home/npandit/project/kneeoa/DeepLearning/train_image'
+test_dest = '/home/npandit/project/kneeoa/DeepLearning/test_image'
 
 for value in train_labels:
 	line = source_dir + "/" + value[0] + value[3] + ".png"
         print line
-        shutil.move(line, train_dest)
+        shutil.copy(line, train_dest)
         count = count + 1
 print ("Moved:" + str(count) + " files to train")
 
@@ -54,7 +54,7 @@ count = 0
 for value in test_labels:
         line = source_dir + "/" + value[0] + value[3] + ".png"
         print line
-        shutil.move(line, test_dest)
+        shutil.copy(line, test_dest)
         count = count + 1
 print ("Moved:" + str(count) + " files to test")
 

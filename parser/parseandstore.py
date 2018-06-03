@@ -29,6 +29,9 @@ def shuffle_dataset(dataset):
 	return user_dataset
 	
 
+pcount = 700
+npcount = 700
+
 kl2ormore = read_file('KL2ormore.txt')
 progressors = read_file('progressors.csv')
 non_progressors = read_file('non_progressors.csv')
@@ -36,12 +39,15 @@ progressors_shuffled = shuffle_dataset(progressors)
 non_progressors_shuffled = shuffle_dataset(non_progressors)
 
 
-def splitData(shuffled_dataset, train_percentage, test_percentage, dev_percentage):
+def splitData(shuffled_dataset, train_percentage, test_percentage, dev_percentage, count):
 	total_prob = train_percentage + test_percentage + dev_percentage
 	if (total_prob - 1 >= .01):
 		print("Error")
 		return
-	total_num = len(shuffled_dataset)
+	if (count < len(shuffled_dataset)):
+		total_num = count
+	else:
+		total_num = len(shuffled_dataset)
 	train_index = int(total_num * train_percentage)
 	test_start_index = train_index
 	test_end_index = test_start_index + int(total_num * test_percentage)
@@ -52,8 +58,9 @@ def splitData(shuffled_dataset, train_percentage, test_percentage, dev_percentag
 	dev_set = shuffled_dataset[dev_start_index:dev_end_index]
 	return train_set, test_set, dev_set
 
-train_progressors, test_progressors, dev_progressors = splitData(progressors_shuffled, 0.8, 0.2, 0.0)
-train_non_progressors, test_non_progressors, dev_non_progressors = splitData(non_progressors_shuffled, 0.8, 0.2, 0.0)
+train_progressors, test_progressors, dev_progressors = splitData(progressors_shuffled, 0.9, 0.1, 0.0, pcount)
+train_non_progressors, test_non_progressors, dev_non_progressors = splitData(non_progressors_shuffled, 0.9, 0.1, 0.0,
+	npcount)
 
 train_data = train_progressors + train_non_progressors
 test_data = test_progressors + test_non_progressors
