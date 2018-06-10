@@ -29,4 +29,4 @@ python train_model.py final_train_images_calc_nodule_only train_image_codes ../p
 
 python test_model.py final_test_images_calc_nodule_only test_image_codes ../parser/test_file savedmodel
 
-References : Xvision project
+References : Xvision project : https://github.com/ayush1997/Xvision
