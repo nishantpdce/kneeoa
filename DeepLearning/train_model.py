@@ -45,53 +45,6 @@ n_classes = 1
 n_hidden1 = 512
 n_hidden2 = 512
 
-def get_vgg_model():
-    # download('https://s3.amazonaws.com/cadl/models/vgg16.tfmodel')
-    with open("vgg16.tfmodel", mode='rb') as f:
-        graph_def = tf.GraphDef()
-        try:
-            graph_def.ParseFromString(f.read())
-        except:
-            print('try adding PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python ' +
-                  'to environment.  e.g.:\n' +
-                  'PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python ipython\n' +
-                  'See here for info: ' +
-                  'https://github.com/tensorflow/tensorflow/issues/582')
-
-    # download('https://s3.amazonaws.com/cadl/models/synset.txt')
-    # with open('synset.txt') as f:
-    #     labels = [(idx, l.strip()) for idx, l in enumerate(f.readlines())]
-
-    return {
-        'graph_def': graph_def
-        # 'labels': labels
-        # 'preprocess': preprocess,
-        # 'deprocess': deprocess
-    }
-
-def preprocess(img, crop=True, resize=True, dsize=(224, 224)):
-    if img.dtype == np.uint8:
-        img = img / 255.0
-
-    if crop:
-        short_edge = min(img.shape[:2])
-        yy = int((img.shape[0] - short_edge) / 2)
-        xx = int((img.shape[1] - short_edge) / 2)
-        crop_img = img[yy: yy + short_edge, xx: xx + short_edge]
-    else:
-        crop_img = img
-
-    if resize:
-        norm_img = imresize(crop_img, dsize, preserve_range=True)
-    else:
-        norm_img = crop_img
-
-    return (norm_img).astype(np.float32)
-def deprocess(img):
-    return np.clip(img * 255, 0, 255).astype(np.uint8)
-    # return ((img / np.max(np.abs(img))) * 127.5+127.5).astype(np.uint8)
-
-
 epsilon = 1e-3
 g2 = tf.Graph()
 with g2.as_default():
@@ -122,8 +75,8 @@ with g2.as_default():
 
         #h_1 = tf.nn.relu(tf.nn.bias_add(tf.matmul(x, W_1),b_1))
         h_1 = tf.nn.relu(BN1)
-        #keep_prob = tf.placeholder("float")
-        #h_1d = tf.nn.dropout(h_1, keep_prob)
+        keep_prob = tf.placeholder("float")
+        h_1d = tf.nn.dropout(h_1, keep_prob)
     with tf.name_scope('layer2'):
         W_2 = tf.get_variable(
                     name="W2",
@@ -137,7 +90,7 @@ with g2.as_default():
         #    dtype=tf.float32,
         #    initializer=tf.constant_initializer(0.0))
 
-        z2_BN = tf.matmul(h_1, W_2)
+        z2_BN = tf.matmul(h_1d, W_2)
         batch_mean2, batch_var2 = tf.nn.moments(z2_BN,[0])
         scale2 = tf.Variable(tf.ones([n_hidden2]))
         beta2 = tf.Variable(tf.zeros([n_hidden2]))
@@ -145,7 +98,7 @@ with g2.as_default():
 
         #h_2 = tf.nn.relu(tf.nn.bias_add(tf.matmul(h_1, W_2),b_2))
         h_2 = tf.nn.relu(BN2)
-        #h_2d = tf.nn.dropout(h_2, keep_prob)
+        h_2d = tf.nn.dropout(h_2, keep_prob)
     with tf.name_scope('output'):
         W_3 = tf.get_variable(
                    name="W3",
@@ -159,7 +112,7 @@ with g2.as_default():
            dtype=tf.float32,
            initializer=tf.constant_initializer(0.0))
 
-        h_3 = tf.nn.bias_add(tf.matmul(h_2, W_3),b_3)
+        h_3 = tf.nn.bias_add(tf.matmul(h_2d, W_3),b_3)
         a_3 =  tf.nn.sigmoid(h_3)
     # h_3 = tf.nn.softmax(h_3)
     # h_3 = h_3
@@ -199,12 +152,13 @@ with tf.Session(graph=g2) as sess2:
 
     accuracy_list=[]
     cost=[]
+    cost1 = np.empty(20, dtype=float)
     n_epochs = 20
     for epoch in range(n_epochs):
 
         start_time = time.time()
 
-        for j in range(0,r,20):
+        for j in range(0,r,batch):
 
             file_Name =  os.getcwd()+"/"+sys.argv[2]+"/"+ str(j)
             fileObject = open(file_Name,'r')
@@ -218,37 +172,26 @@ with tf.Session(graph=g2) as sess2:
 
             print ("j=",j)
 
-            label = np.zeros((20,1))
+            label = np.zeros((batch,1))
             #print "label shape", label.shape
             idx = 0
             if j==r-1:
                 #label = train_labels[j:]
                 filename = arr_train[j:]
                 for var in filename:
-                    label[idx][0] = train_labels_dict[var[0:8]][1]
+                    label[idx][0] = train_labels_dict[var[0:9]][1]
                     idx = idx + 1
                 label = label[:idx]
                 print (label.shape)
             else:
                 #label = train_labels[j+0:j+20]
-                filename = arr_train[j+0:j+20]
+                filename = arr_train[j+0:j+batch]
                 for var in filename:
-                        label[idx][0] = train_labels_dict[var[0:8]][1]
+                        label[idx][0] = train_labels_dict[var[0:9]][1]
                         idx = idx + 1
                 print (label.shape)
 
-            _,l,w1,cst,a3_out = sess2.run([optimizer,train_label,W_1,Cost,a_3], feed_dict={x: content_features, y:label, keep_prob : 0.7})
-      #      results = sess2.run({
-      #        "opt": optimizer,
-      ##        "train_label": train_label,
-      #        ...
-      #       }, feed={...})
-      #      import pdb; pdb.set_trace()
-      #      print(results["train_label"])
-            #print l
-            #print "a3_out after run", a3_out
-            #print "done"            
-            # print str(epoch) + "-------------------------------------"
+            _,l,w1,cst,a3_out = sess2.run([optimizer,train_label,W_1,Cost,a_3], feed_dict={x: content_features, y:label, keep_prob : 0.5})
 
 
             if j % 100==0:
@@ -257,8 +200,11 @@ with tf.Session(graph=g2) as sess2:
                 cost.append(cst)
 
                 print ("COST",cost)
+            if j == 100:
+                cost1[epoch] = cst 
 
         print("--- %s seconds ---" % (time.time() - start_time))
+        print ("Cost for some mini batch",cost1)
         j=0
         path_name = os.getcwd()+"/"+sys.argv[4]+"/"+"my-model-"+str(epoch)+".ckpt"
         save_path = saver.save(sess2, path_name)

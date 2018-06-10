@@ -47,47 +47,6 @@ n_classes = 1
 n_hidden1 = 512
 n_hidden2 = 512
 
-def get_vgg_model():
-    # download('https://s3.amazonaws.com/cadl/models/vgg16.tfmodel')
-    with open("vgg16.tfmodel", mode='rb') as f:
-        graph_def = tf.GraphDef()
-        try:
-            graph_def.ParseFromString(f.read())
-        except:
-            print('try adding PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python ' +
-                  'to environment.  e.g.:\n' +
-                  'PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python ipython\n' +
-                  'See here for info: ' +
-                  'https://github.com/tensorflow/tensorflow/issues/582')
-
-
-    return {
-        'graph_def': graph_def
-    }
-
-def preprocess(img, crop=True, resize=True, dsize=(224, 224)):
-    if img.dtype == np.uint8:
-        img = img / 255.0
-
-    if crop:
-        short_edge = min(img.shape[:2])
-        yy = int((img.shape[0] - short_edge) / 2)
-        xx = int((img.shape[1] - short_edge) / 2)
-        crop_img = img[yy: yy + short_edge, xx: xx + short_edge]
-    else:
-        crop_img = img
-
-    if resize:
-        norm_img = imresize(crop_img, dsize, preserve_range=True)
-    else:
-        norm_img = crop_img
-
-    return (norm_img).astype(np.float32)
-def deprocess(img):
-    return np.clip(img * 255, 0, 255).astype(np.uint8)
-    # return ((img / np.max(np.abs(img))) * 127.5+127.5).astype(np.uint8)
-
-
 epsilon = 1e-3
 g2 = tf.Graph()
 with g2.as_default():
@@ -210,7 +169,7 @@ with tf.Session(graph=g2) as sess1:
             #test_label = test_labels[j:]
             filename = arr_test[j:]
             for var in filename:
-                label[idx][0] = test_labels_dict[var[0:8]][1]
+                label[idx][0] = test_labels_dict[var[0:9]][1]
                 idx = idx + 1
             label = label[:idx]
             print ("test_label",label.shape)
@@ -218,7 +177,7 @@ with tf.Session(graph=g2) as sess1:
             #test_label = test_labels[j:25+j]
             filename = arr_test[j+0:j+25]
             for var in filename:
-                label[idx][0] = test_labels_dict[var[0:8]][1]
+                label[idx][0] = test_labels_dict[var[0:9]][1]
                 idx = idx + 1
             print ("test_label",label.shape)
 
@@ -241,31 +200,10 @@ with tf.Session(graph=g2) as sess1:
 print (class_pred.shape)
 print (class_actual.shape)
 
-from sklearn.metrics import confusion_matrix
-import matplotlib.pyplot as plt
-
-#conf_matrix = confusion_matrix(class_actual,class_pred)
-
-prf = tf.metrics.precision(class_actual, class_pred)
-acc = tf.metrics.accuracy(class_actual, class_pred)
-sess = tf.InteractiveSession()
-tf.global_variables_initializer().run()
-tf.local_variables_initializer().run()
-print(sess.run([prf]))
-print(sess.run([acc]))
-
-#print conf_matrix
 prfs = precision_recall_fscore_support(class_actual, class_pred)
 print ("precision : ",prfs[0]) 
 print ("recall : ",prfs[1]) 
 print ("fscore : ",prfs[2]) 
 print ("support : ",prfs[3]) 
-#plt.matshow(conf_matrix)
-#plt.colorbar()
-#plt.ylabel('True label')
-#plt.xlabel('Predicted label')
-
-plt.show()
-
 
 # python test_model.py <testing images folder> <save test matrix> <testing label pickle> <save model checkpoints>

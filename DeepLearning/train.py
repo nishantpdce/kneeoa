@@ -101,7 +101,7 @@ print (r)
 
 arr_train = os.listdir(os.getcwd()+"/"+sys.argv[1])
 
-for j in range(0,r,20):
+for j in range(0,r,batch):
 # for j in range(1):
     img=[]
     # labels = []
@@ -110,7 +110,7 @@ for j in range(0,r,20):
         m = j+batch-training_folder_len
         print (m)
 
-    for i in range(j+0,j+20-m):
+    for i in range(j+0,j+batch-m):
     # for i in range(980,994):
 
         og = scipy.misc.imread(sys.argv[1]+"/"+str(arr_train[i]), mode='RGB')

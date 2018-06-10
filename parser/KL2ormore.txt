@@ -1,3 +1,4 @@
+ID,Side,Progressor,SideStr,Timepoint
 ID,Side,Progressor,SideStr
 ID,Side,Project,KL0,KL12,KL24,KL36,KL48,KL72,KL96,Progressor
 9000622,1,15,1,1,NaN,NaN,NaN,NaN,NaN,0

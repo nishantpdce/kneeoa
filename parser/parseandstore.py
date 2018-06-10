@@ -19,22 +19,22 @@ def read_file(filename):
 def shuffle_dataset(dataset):
 	user_dataset = []
 	for data in dataset:
-		user_id = data[0]
+		user_id = data[0] + str(int(data[4][:-2])/12)
 		user_side = data[1]
 		user_progress = data[2]
-		user_side_string = data[len(data)-1][:-2]
+		user_side_string = data[3]
 		user_array = [user_id, user_side, user_progress, user_side_string]
 		user_dataset.append(user_array)
 	random.shuffle(user_dataset)
 	return user_dataset
 	
 
-pcount = 700
-npcount = 700
+pcount = 1500
+npcount = 1500
 
 kl2ormore = read_file('KL2ormore.txt')
 progressors = read_file('progressors.csv')
-non_progressors = read_file('non_progressors.csv')
+non_progressors = read_file('nonprogressors.csv')
 progressors_shuffled = shuffle_dataset(progressors)
 non_progressors_shuffled = shuffle_dataset(non_progressors)
 
